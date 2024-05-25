@@ -80,9 +80,13 @@ void AcquisitionWorker::Start()
 
     auto bytesPerPixel = size_t{ 0 };
 
-    pub_right_img = it.advertise("/right_cam_image_raw", 100);
-    pub_left_img = it.advertise("/left_cam_image_raw", 100);
+    // camera image publisher
+    pub_right_img = it.advertise("/right_cam/image_raw", 100);
+    pub_left_img = it.advertise("/left_cam/image_raw", 100);
 
+    // camera_info publisher
+    right_cam_info_pub = nh.advertise<sensor_msgs::CameraInfo>("/right_cam/camera_info", 100);
+    left_cam_info_pub = nh.advertise<sensor_msgs::CameraInfo>("/left_cam/camera_info", 100);
 
     switch (m_outputPixelFormat)
     {
@@ -191,22 +195,7 @@ void AcquisitionWorker::Start()
             // Send signal to update the display
             emit ImageReceived(qImage);
 #if 1
-            uint8_t* data_ptr = image_processed.Data();
-
-            std_msgs::Header head_info = std_msgs::Header();
-            head_info.stamp = ros::Time::now();
-            head_info.frame_id = "sensor_origin";
-
-            sensor_msgs::Image image_msg;
-            image_msg.header = head_info;
-
-            sensor_msgs::fillImage( image_msg,
-                                    sensor_msgs::image_encodings::BGRA8,
-                                    image_processed.Height(),
-                                    image_processed.Width(),
-                                    image_processed.Width()*4,
-                                    data_ptr
-                                    );     
+                 
             // Publishing raw image
             /*
                a. If there are multiple devices connected, First give a name to them using IDS cockpit or manually in the code
@@ -219,11 +208,159 @@ void AcquisitionWorker::Start()
             */
             if(device_user_id == "right_cam") {
                 //std::cout << "Right Image pub success\n";
+
+                // build the camera info for right camera from the parameter server
+                nh.getParam("/right_cam/image_width", img_width);
+                nh.getParam("/right_cam/image_height", img_height);
+                nh.getParam("/right_cam/distortion_model", distortion_model);
+
+                nh.getParam("/right_cam/distortion_coefficients/data", D);
+                nh.getParam("/right_cam/camera_matrix/data", K);
+                nh.getParam("/right_cam/rectification_matrix/data", R);
+                nh.getParam("/right_cam/projection_matrix/data", P);
+
+                right_cam_info.height = img_height;
+                right_cam_info.width = img_width;
+                right_cam_info.distortion_model = distortion_model;
+
+                right_cam_info.D = D;
+
+                // K is of type std::vector<double>, converting the vector data to boost::array<double> for the sensor_msgs/cameraInfo
+                boost::array<double, 9> K_array;
+                if (K.size() == 9) {
+                    for (size_t i = 0; i < 9; ++i) {
+                        K_array[i] = K[i];
+                    }
+                } else {
+                    // Error handler
+                    throw std::invalid_argument("K vector must have exactly 9 elements");
+                }
+                right_cam_info.K = K_array;
+
+                // R is of type std::vector<double> converting the vector data to boost::array<double> for the sensor_msgs/cameraInfo
+                boost::array<double, 9> R_array;
+                if (R.size() == 9) {
+                    for (size_t i = 0; i < 9; ++i) {
+                        R_array[i] = R[i];
+                    }
+                } else {
+                    // Error handler
+                    throw std::invalid_argument("R vector must have exactly 9 elements");
+                }
+                right_cam_info.R = R_array;
+
+                // P is of type std::vector<double> converting the vector data to boost::array<double> for the sensor_msgs/cameraInfo
+                boost::array<double, 12> P_array;
+                if (P.size() == 12) {
+                    for (size_t i = 0; i < 12; ++i) {
+                        P_array[i] = P[i];
+                    }
+                } else {
+                    // Error handler
+                    throw std::invalid_argument("P vector must have exactly 12 elements");
+                }
+                right_cam_info.P = P_array;
+
+
+                uint8_t* data_ptr = image_processed.Data();
+
+                std_msgs::Header head_info = std_msgs::Header();
+                head_info.stamp = ros::Time::now();
+                head_info.frame_id = "sensor_origin";
+
+                sensor_msgs::Image image_msg;
+                image_msg.header = head_info;
+                right_cam_info.header = head_info;
+
+                sensor_msgs::fillImage( image_msg,
+                                        sensor_msgs::image_encodings::BGRA8,
+                                        image_processed.Height(),
+                                        image_processed.Width(),
+                                        image_processed.Width()*4,
+                                        data_ptr
+                                        );
                 pub_right_img.publish(image_msg);
+                // publishing camera info for the image_proc node
+                right_cam_info_pub.publish(right_cam_info);
             }
             else if(device_user_id == "left_cam"){
                 //std::cout << "Left Image pub success\n";
+
+                // fill the camera_info data for the left camera
+                nh.getParam("/left_cam/image_width", img_width);
+                nh.getParam("/left_cam/image_height", img_height);
+                nh.getParam("/left_cam/distortion_model", distortion_model);
+
+                nh.getParam("/left_cam/distortion_coefficients/data", D);
+                nh.getParam("/left_cam/camera_matrix/data", K);
+                nh.getParam("/left_cam/rectification_matrix/data", R);
+                nh.getParam("/left_cam/projection_matrix/data", P);
+
+                left_cam_info.height = img_height;
+                left_cam_info.width = img_width;
+                left_cam_info.distortion_model = distortion_model;
+
+                left_cam_info.D = D;
+
+                // K is of type std::vector<double>, converting the vector data to boost::array<double> for the sensor_msgs/cameraInfo
+                boost::array<double, 9> K_array;
+                if (K.size() == 9) {
+                    for (size_t i = 0; i < 9; ++i) {
+                        K_array[i] = K[i];
+                    }
+                } else {
+                    // Error handler
+                    throw std::invalid_argument("K vector must have exactly 9 elements");
+                }
+                left_cam_info.K = K_array;
+
+                // R is of type std::vector<double> converting the vector data to boost::array<double> for the sensor_msgs/cameraInfo
+                boost::array<double, 9> R_array;
+                if (R.size() == 9) {
+                    for (size_t i = 0; i < 9; ++i) {
+                        R_array[i] = R[i];
+                    }
+                } else {
+                    // Error handler
+                    throw std::invalid_argument("R vector must have exactly 9 elements");
+                }
+                left_cam_info.R = R_array;
+
+                // P is of type std::vector<double> converting the vector data to boost::array<double> for the sensor_msgs/cameraInfo
+                boost::array<double, 12> P_array;
+                if (P.size() == 12) {
+                    for (size_t i = 0; i < 12; ++i) {
+                        P_array[i] = P[i];
+                    }
+                } else {
+                    // Error handler
+                    throw std::invalid_argument("P vector must have exactly 12 elements");
+                }
+                left_cam_info.P = P_array;
+                
+                
+
+                uint8_t* data_ptr = image_processed.Data();
+
+                std_msgs::Header head_info = std_msgs::Header();
+                head_info.stamp = ros::Time::now();
+                head_info.frame_id = "sensor_origin";
+
+                sensor_msgs::Image image_msg;
+                image_msg.header = head_info;
+                left_cam_info.header = head_info;
+
+                sensor_msgs::fillImage( image_msg,
+                                        sensor_msgs::image_encodings::BGRA8,
+                                        image_processed.Height(),
+                                        image_processed.Width(),
+                                        image_processed.Width()*4,
+                                        data_ptr
+                                        );
+
                 pub_left_img.publish(image_msg);
+                // publishing camera info for the image_proc node
+                left_cam_info_pub.publish(left_cam_info);
             }else {
                 std::cout << "PUBLISH ERROR, No images are being publushed!!!!\n";
             }

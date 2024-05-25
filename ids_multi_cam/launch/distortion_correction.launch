@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- <group ns = "right_cam">  -->
+    <node name="distortion_correction" pkg="image_proc" type="image_proc" />
+  <!-- </group> -->
+</launch>

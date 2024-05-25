@@ -87,6 +87,22 @@ private:
     image_transport::Publisher pub_right_img;
     image_transport::Publisher pub_left_img;
 
+    //camera info publisher
+    ros::Publisher right_cam_info_pub;
+    ros::Publisher left_cam_info_pub;
+
+    sensor_msgs::CameraInfo right_cam_info = sensor_msgs::CameraInfo();
+    sensor_msgs::CameraInfo left_cam_info = sensor_msgs::CameraInfo();
+
+    // required attributes for camera_info msg
+    int img_width;
+    int img_height;
+    std::string distortion_model;
+    std::vector<double> D; // Distortion Coeffs
+    std::vector<double> K; // Intrinsic camera matrix
+    std::vector<double> R; // rectification Matrix
+    std::vector<double> P; // Projection or Camera Matrix
+
 signals:
     void ImageReceived(QImage image);
     void UpdateCounters(double frameTime_ms, double conversionTime_ms, unsigned int frameCounter,

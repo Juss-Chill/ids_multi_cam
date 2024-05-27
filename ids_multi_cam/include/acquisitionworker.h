@@ -95,13 +95,21 @@ private:
     sensor_msgs::CameraInfo left_cam_info = sensor_msgs::CameraInfo();
 
     // required attributes for camera_info msg
-    int img_width;
-    int img_height;
-    std::string distortion_model;
-    std::vector<double> D; // Distortion Coeffs
-    std::vector<double> K; // Intrinsic camera matrix
-    std::vector<double> R; // rectification Matrix
-    std::vector<double> P; // Projection or Camera Matrix
+    int img_width_right;
+    int img_height_right;
+    std::string distortion_model_right;
+    std::vector<double> D_right; // Distortion Coeffs
+    std::vector<double> K_right; // Intrinsic camera matrix
+    std::vector<double> R_right; // rectification Matrix
+    std::vector<double> P_right; // Projection or Camera Matrix
+
+    int img_width_left;
+    int img_height_left;
+    std::string distortion_model_left;
+    std::vector<double> D_left; // Distortion Coeffs
+    std::vector<double> K_left; // Intrinsic camera matrix
+    std::vector<double> R_left; // rectification Matrix
+    std::vector<double> P_left; // Projection or Camera Matrix
 
 signals:
     void ImageReceived(QImage image);

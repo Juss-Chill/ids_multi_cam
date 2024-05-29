@@ -10,6 +10,7 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/CompressedImage.h>
 
 // Standard CPP libraries
 #include <string>

@@ -303,7 +303,7 @@ bool MainWindow::OpenDevices()
                     // Determine the current BinningHorizontal
                     int64_t value = deviceElem->nodemapRemoteDevice->FindNode<peak::core::nodes::IntegerNode>("BinningHorizontal")->Value();
                     // Set BinningHorizontal to 1
-                    deviceElem->nodemapRemoteDevice->FindNode<peak::core::nodes::IntegerNode>("BinningHorizontal")->SetValue(4); // divide the inbult resolution of 1920 X 1200 by this value of 4 => 480 X 300
+                    deviceElem->nodemapRemoteDevice->FindNode<peak::core::nodes::IntegerNode>("BinningHorizontal")->SetValue(1); // divide the inbult resolution of 1920 X 1200 by this value of 4 => 480 X 300
                                                                                                                                  // DONOT FORGET TO UPDATE IMAGE HEIGHT AND WIDTH IN LEFT AND RIGHT CAMERA INFO.YAML FILE
                                                                                                                                  // OTEHRWISE YOU WILL SEE A SMALL BOX OF IMAGE IN THE BIG BLACK BOX 
 
@@ -313,7 +313,7 @@ bool MainWindow::OpenDevices()
                     // Determine the current BinningVertical
                     value = deviceElem->nodemapRemoteDevice->FindNode<peak::core::nodes::IntegerNode>("BinningVertical")->Value();
                     // Set BinningVertical to 1
-                    deviceElem->nodemapRemoteDevice->FindNode<peak::core::nodes::IntegerNode>("BinningVertical")->SetValue(4);
+                    deviceElem->nodemapRemoteDevice->FindNode<peak::core::nodes::IntegerNode>("BinningVertical")->SetValue(1);
 
                     try
                     {

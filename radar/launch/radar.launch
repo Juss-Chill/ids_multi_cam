@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="radar" type="radar_init.py" name="radar_data" output="screen" />
+    <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find ids_multi_cam)/config/rviz.rviz" /> -->
+</launch>

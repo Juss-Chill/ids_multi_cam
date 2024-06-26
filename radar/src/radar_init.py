@@ -38,9 +38,7 @@ def radar_init():
     text_marker.header.frame_id = "velodyne"
     object_data.header.frame_id = "velodyne"
 
-    object_data.header.stamp = marker.header.stamp = text_marker.header.stamp =rospy.Time.now()
-
-    marker.type = Marker().SPHERE # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
+    marker.type = Marker().CUBE # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
     text_marker.type = Marker.TEXT_VIEW_FACING
 
     # Set the scale of the marker
@@ -48,9 +46,9 @@ def radar_init():
     marker.scale.y = 0.5
     marker.scale.z = 1.0
 
-    text_marker.scale.x = 0.25
+    text_marker.scale.x = 0.25 # font size
     text_marker.scale.y = 0.25
-    text_marker.scale.z = 0.25  # font size
+    text_marker.scale.z = 0.25 
 
     # Set the color
     marker.color.r = 0.0
@@ -129,7 +127,6 @@ def radar_init():
                         text_marker.pose.orientation.z = 0.0
                         text_marker.pose.orientation.w = 1.0
 
-                        
 
                         marker.action = Marker.ADD
                         text_marker.action = Marker.ADD
@@ -141,12 +138,32 @@ def radar_init():
                         object_data.speed = real_speed
                         object_data.angle = target_info.angle
                         object_data.magnitude = target_info.magnitude
+                        object_data.obj_flag = True # will set to True if there is an existing object
+
+                        object_data.header.stamp = marker.header.stamp = text_marker.header.stamp =rospy.Time.now()
 
                         # publisht the marker and the dominant object info
                         marker_pub.publish(marker)
                         text_pub.publish(text_marker)
                         object_info_pub.publish(object_data)
-                
+                    else:
+                        # erase the existing marker since there exists no detected object
+                        marker.action = Marker.DELETEALL
+                        text_marker.action = Marker.DELETEALL
+
+                        # publish the Dominant Object information message
+                        object_data.distance = 0.
+                        object_data.speed = 0.
+                        object_data.angle = 0.
+                        object_data.magnitude = 0.
+                        object_data.obj_flag = False # will set to True if there is an existing object
+
+                        object_data.header.stamp = marker.header.stamp = text_marker.header.stamp =rospy.Time.now()
+
+                        marker_pub.publish(marker)
+                        text_pub.publish(text_marker)
+                        object_info_pub.publish(object_data)
+
             except Exception as e:
                 logging.error("An error occurred: %s", e)
 

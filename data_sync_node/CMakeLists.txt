@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS ## give only ROS compatible or builtin p
   rospy
   sensor_msgs
   std_msgs
+  custom_msgs
 )
 
 find_package(OpenCV REQUIRED ) ## give any external Packages
@@ -118,8 +119,8 @@ find_package(OpenCV REQUIRED ) ## give any external Packages
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES data_sync_node # Project name
- CATKIN_DEPENDS  cv_bridge image_transport message_filters rosbag roscpp rospy sensor_msgs std_msgs ## all catkin dependent packages will go here 
- DEPENDS OpenCV  ## not a catkin package, so define here
+ CATKIN_DEPENDS  cv_bridge image_transport message_filters rosbag roscpp rospy sensor_msgs std_msgs custom_msgs## all catkin dependent packages will go here 
+ DEPENDS OpenCV ## not a catkin package, so define here
 )
 
 ###########

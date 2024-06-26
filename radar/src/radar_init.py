@@ -7,7 +7,7 @@ import logging
 
 from kld7 import KLD7
 from visualization_msgs.msg import Marker
-from radar.msg import object_info
+from custom_msgs.msg import object_info
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

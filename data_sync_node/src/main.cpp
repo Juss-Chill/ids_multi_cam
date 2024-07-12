@@ -8,7 +8,10 @@ const double write_frequency = 0.5;  // 2 Hz (0.5 seconds interval)
 static int frame_cnt = 0;
 
 void bag_write_cb(const sensor_msgs::CompressedImageConstPtr& rcam_img, const sensor_msgs::CompressedImageConstPtr& lcam_img, 
-                  const sensor_msgs::PointCloud2ConstPtr vlp_pts, const custom_msgs::object_infoConstPtr& radar_data ,rosbag::Bag& data_bag, std::ofstream& csv_file) {
+                  const sensor_msgs::PointCloud2ConstPtr vlp_pts, const custom_msgs::object_infoConstPtr& radar_data ,
+                  const geometry_msgs::Vector3StampedConstPtr accelration, const geometry_msgs::Vector3StampedConstPtr pose_lla, 
+                  const geometry_msgs::QuaternionStampedConstPtr quat, const geometry_msgs::TwistStampedConstPtr twist,
+                  rosbag::Bag& data_bag) {
     auto now = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsed_seconds = now - last_write_time;
 
@@ -19,13 +22,20 @@ void bag_write_cb(const sensor_msgs::CompressedImageConstPtr& rcam_img, const se
 
         #ifndef WRITE_CSV
         // Write the data to CSV and then write the data to the BAG file
-        csv_file << rcam_img->header.stamp << " , " << vlp_pts->header.stamp << " , " << std::abs(rcam_img->header.stamp.toSec() - vlp_pts->header.stamp.toSec()) << std::endl;
+        // csv_file << rcam_img->header.stamp << " , " << vlp_pts->header.stamp << " , " << std::abs(rcam_img->header.stamp.toSec() - vlp_pts->header.stamp.toSec()) << std::endl;
 
         // Write synchronized lidar and camera data to the ROS bag
         data_bag.write("/right_cam/image_rect_color/compressed", rcam_img->header.stamp, *rcam_img);
         data_bag.write("/left_cam/image_rect_color/compressed", lcam_img->header.stamp, *lcam_img);
         data_bag.write("/velodyne_points", vlp_pts->header.stamp, *vlp_pts);
         data_bag.write("/dominant_obj_info", radar_data->header.stamp, *radar_data);
+
+        //Imu data write
+        data_bag.write("/filter/free_acceleration", accelration->header.stamp, *accelration);
+        data_bag.write("/filter/positionlla", pose_lla->header.stamp, *pose_lla);
+        data_bag.write("/filter/quaternion", quat->header.stamp, *quat);
+        data_bag.write("/filter/twist", twist->header.stamp, *twist);
+
         std::cout << "Frame count : " << frame_cnt << std::endl;
         #endif
     }
@@ -51,7 +61,7 @@ int main(int argc, char **argv) {
     }
 
     rosbag::Bag data_bag;
-    data_bag.open("fused_r_cam_june26.bag", rosbag::bagmode::Write);
+    data_bag.open("fused_l_cam_jul9.bag", rosbag::bagmode::Write);
     data_bag.setCompression(rosbag::compression::LZ4);
     #endif
 
@@ -59,11 +69,20 @@ int main(int argc, char **argv) {
     message_filters::Subscriber<sensor_msgs::CompressedImage> left_cam_img_sub(nh, "/left_cam/image_rect_color/compressed", 10);
     message_filters::Subscriber<sensor_msgs::PointCloud2> vlp_16_points_sub(nh, "/velodyne_points", 10);
     message_filters::Subscriber<custom_msgs::object_info> radar_obj_info_sub(nh, "/dominant_obj_info", 10);
-    
-    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::PointCloud2, custom_msgs::object_info> MySyncPolicy;
 
-    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), right_cam_img_sub, left_cam_img_sub, vlp_16_points_sub, radar_obj_info_sub);
-    sync.registerCallback(boost::bind(&bag_write_cb, _1, _2, _3, _4, boost::ref(data_bag), boost::ref(file)));
+    // IMU info
+    message_filters::Subscriber<geometry_msgs::Vector3Stamped>  free_acc(nh, "/filter/free_acceleration", 10);
+    message_filters::Subscriber<geometry_msgs::Vector3Stamped>  p_lla(nh, "/filter/positionlla", 10);
+    message_filters::Subscriber<geometry_msgs::QuaternionStamped>  quaternion(nh, "/filter/quaternion", 10);
+    message_filters::Subscriber<geometry_msgs::TwistStamped>  twist(nh, "/filter/twist", 10);
+    //message_filters::Subscriber<geometry_msgs::Vector3Stamped>  free_vel(nh, "/filter/velocity", 10); // not required as it is included in the Twist
+    
+    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::PointCloud2, custom_msgs::object_info,
+                                                            geometry_msgs::Vector3Stamped, geometry_msgs::Vector3Stamped,geometry_msgs::QuaternionStamped, geometry_msgs::TwistStamped/*, geometry_msgs::Vector3Stamped*/> MySyncPolicy;
+
+    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), right_cam_img_sub, left_cam_img_sub, vlp_16_points_sub, radar_obj_info_sub
+                                                        ,free_acc, p_lla, quaternion, twist/*,free_vel*/);
+    sync.registerCallback(boost::bind(&bag_write_cb, _1, _2, _3, _4, _5, _6, _7, _8, boost::ref(data_bag)));
     
     // Initialize the last write time
     last_write_time = std::chrono::steady_clock::now();

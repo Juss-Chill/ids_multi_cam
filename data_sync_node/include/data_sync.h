@@ -12,6 +12,10 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/CompressedImage.h>
 
+#include<geometry_msgs/Vector3Stamped.h>
+#include<geometry_msgs/QuaternionStamped.h>
+#include<geometry_msgs/TwistStamped.h>
+
 // Standard CPP libraries
 #include <string>
 #include <vector>

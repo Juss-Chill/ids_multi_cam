@@ -64,7 +64,7 @@ def radar_init():
 
 
     while not rospy.is_shutdown():
-        with KLD7(port="/dev/ttyUSB0", baudrate=115200) as radar:
+        with KLD7(port="/dev/ttyUSB1", baudrate=115200) as radar:
             try:
                 print(radar._param_dict)
                 for target_info in radar.stream_TDAT():

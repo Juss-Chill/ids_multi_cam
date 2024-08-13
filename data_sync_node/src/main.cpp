@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     }
 
     rosbag::Bag data_bag;
-    data_bag.open("fused_l_cam_jul9.bag", rosbag::bagmode::Write);
+    data_bag.open("fused_l_cam_Aug9.bag", rosbag::bagmode::Write);
     data_bag.setCompression(rosbag::compression::LZ4);
     #endif
 
@@ -75,10 +75,11 @@ int main(int argc, char **argv) {
     message_filters::Subscriber<geometry_msgs::Vector3Stamped>  p_lla(nh, "/filter/positionlla", 10);
     message_filters::Subscriber<geometry_msgs::QuaternionStamped>  quaternion(nh, "/filter/quaternion", 10);
     message_filters::Subscriber<geometry_msgs::TwistStamped>  twist(nh, "/filter/twist", 10);
+
     //message_filters::Subscriber<geometry_msgs::Vector3Stamped>  free_vel(nh, "/filter/velocity", 10); // not required as it is included in the Twist
     
-    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::PointCloud2, custom_msgs::object_info,
-                                                            geometry_msgs::Vector3Stamped, geometry_msgs::Vector3Stamped,geometry_msgs::QuaternionStamped, geometry_msgs::TwistStamped/*, geometry_msgs::Vector3Stamped*/> MySyncPolicy;
+    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::PointCloud2, custom_msgs::object_info
+                                                            ,geometry_msgs::Vector3Stamped, geometry_msgs::Vector3Stamped,geometry_msgs::QuaternionStamped, geometry_msgs::TwistStamped/*, geometry_msgs::Vector3Stamped*/> MySyncPolicy;
 
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), right_cam_img_sub, left_cam_img_sub, vlp_16_points_sub, radar_obj_info_sub
                                                         ,free_acc, p_lla, quaternion, twist/*,free_vel*/);

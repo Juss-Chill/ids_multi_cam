@@ -34,10 +34,6 @@ def radar_init():
     text_marker = Marker()
     object_data = object_info()
 
-    marker.header.frame_id = "velodyne"
-    text_marker.header.frame_id = "velodyne"
-    object_data.header.frame_id = "velodyne"
-
     marker.type = Marker().CUBE # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
     text_marker.type = Marker.TEXT_VIEW_FACING
 
@@ -96,8 +92,8 @@ def radar_init():
                         Vy = real_speed * np.cos(np.radians(target_info.angle))
                         
                         #plot the co-ordinates
-                        x.append(x_cord)
-                        y.append(y_cord)
+                        # x.append(x_cord)
+                        # y.append(y_cord)
 
                         marker.id = 1 # Unique id assigned to this marker. It is your responsibility to keep these unique within your namespace. 
                         text_marker.id = 10
@@ -141,6 +137,7 @@ def radar_init():
                         object_data.obj_flag = True # will set to True if there is an existing object
 
                         object_data.header.stamp = marker.header.stamp = text_marker.header.stamp =rospy.Time.now()
+                        object_data.header.frame_id = marker.header.frame_id = text_marker.header.frame_id = "velodyne"
 
                         # publisht the marker and the dominant object info
                         marker_pub.publish(marker)
@@ -159,6 +156,7 @@ def radar_init():
                         object_data.obj_flag = False # will set to True if there is an existing object
 
                         object_data.header.stamp = marker.header.stamp = text_marker.header.stamp =rospy.Time.now()
+                        object_data.header.frame_id = marker.header.frame_id = text_marker.header.frame_id = "velodyne"
 
                         marker_pub.publish(marker)
                         text_pub.publish(text_marker)
@@ -167,8 +165,8 @@ def radar_init():
             except Exception as e:
                 logging.error("An error occurred: %s", e)
 
-            plt.scatter(x,y)       
-            plt.show()
+            # plt.scatter(x,y)       
+            # plt.show()
     
 
 

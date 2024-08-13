@@ -59,7 +59,7 @@ struct AngularVelocityPublisher : public PacketCallback
             std::string frame_id = DEFAULT_FRAME_ID;
             ros::param::getCached("~frame_id", frame_id);
 
-            msg.header.stamp = timestamp;
+            msg.header.stamp = ros::Time::now();;
             msg.header.frame_id = frame_id;
 
             XsVector gyro = packet.calibratedGyroscopeData();

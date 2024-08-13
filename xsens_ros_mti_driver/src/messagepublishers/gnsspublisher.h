@@ -59,7 +59,7 @@ struct GnssPublisher : public PacketCallback
         {
             sensor_msgs::NavSatFix msg;
 
-            msg.header.stamp = timestamp;
+            msg.header.stamp = ros::Time::now();;
             msg.header.frame_id = frame_id;
 
             XsRawGnssPvtData gnss = packet.rawGnssPvtData();

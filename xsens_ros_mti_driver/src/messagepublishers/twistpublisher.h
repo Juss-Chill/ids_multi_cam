@@ -56,7 +56,7 @@ struct TwistPublisher : public PacketCallback
         {
             geometry_msgs::TwistStamped msg;
 
-            msg.header.stamp = timestamp;
+            msg.header.stamp = ros::Time::now();;
             msg.header.frame_id = frame_id;
 
             XsVector v = packet.velocity();

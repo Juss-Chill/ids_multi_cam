@@ -56,7 +56,7 @@ struct TemperaturePublisher : public PacketCallback
         {
             sensor_msgs::Temperature msg;
 
-            msg.header.stamp = timestamp;
+            msg.header.stamp = ros::Time::now();;
             msg.header.frame_id = frame_id;
 
             msg.temperature = packet.temperature();

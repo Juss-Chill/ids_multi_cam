@@ -56,7 +56,7 @@ struct OrientationPublisher : public PacketCallback
         {
             geometry_msgs::QuaternionStamped msg;
 
-            msg.header.stamp = timestamp;
+            msg.header.stamp = ros::Time::now();;
             msg.header.frame_id = frame_id;
 
             XsQuaternion q = packet.orientationQuaternion();

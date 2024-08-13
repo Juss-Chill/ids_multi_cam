@@ -67,7 +67,7 @@ struct TimeReferencePublisher : public PacketCallback
 
             ros::Time sample_time(sec, nsec);
 
-            msg.header.stamp = timestamp;
+            msg.header.stamp = ros::Time::now();;
             // msg.header.frame_id = unused
             msg.time_ref = sample_time;
             // msg.source = optional

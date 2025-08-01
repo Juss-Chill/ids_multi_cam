@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/noetic/include/**",
+        "/home/asl/Muni/workspace/src/ids_multi_cam/data_sync_node/include/**",
+        "/home/asl/Muni/workspace/src/ids_multi_cam/ids_multi_cam/include/**",
+        "/home/asl/Muni/workspace/src/ids_multi_cam/radar/include/**",
+        "/home/asl/Muni/workspace/devel/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

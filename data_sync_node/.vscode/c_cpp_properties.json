@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "${default}",
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "includePath": [
+                "/opt/ros/noetic/include/**",
+                "/home/shreyash/workspace/ids_ros_ws/src/data_sync_node/include/**",
+                "/home/shreyash/workspace/ids_ros_ws/src/ids_ros/include/**",
+                "/opt/ros/noetic/share/sensor_msgs/include/**",
+                "/usr/include/**",
+                "/opt/ros/noetic/include"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
+}

@@ -1,0 +1,18 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "/home/asl/Muni/workspace/src/ids_multi_cam/**",
+        "/home/asl/Muni/workspace/src/**"
+    ],
+    "python.analysis.extraPaths": [
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "/home/asl/Muni/workspace/src/ids_multi_cam/**",
+        "/home/asl/Muni/workspace/src/**"
+    ],
+    "cmake.configureOnOpen": true,
+    "files.associations": {
+        "chrono": "cpp",
+        "*.tcc": "cpp",
+        "fstream": "cpp"
+    }
+}

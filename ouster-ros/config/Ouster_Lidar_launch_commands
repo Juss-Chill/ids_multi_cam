@@ -11,14 +11,14 @@ roslaunch ouster_ros driver.launch sensor_hostname:=os-122507001561.local ouster
 roslaunch ouster_ros driver.launch sensor_hostname:=os-122451000454.local ouster_ns:=ouster2 sensor_frame:=os_sensor_left lidar_frame:=os_lidar_left
 
 # transform from left lidar frame to right lidar frame
- rosrun tf2_ros static_transform_publisher 0 0.775 0 0 0 0 1 os_sensor_right os_sensor_left 
- # 0.775 in meters along y axis, left sensor is 0.775m away from the right lidar
+ rosrun tf2_ros static_transform_publisher 0 1.005 0 0 0 0 1 os_sensor_right os_sensor_left 
+ # 0.775 in meters along y axis, left sensor is 1.005m away from the right lidar
  # lidar frame and sensor frame have a transformation of -180 degress, check  in tf_static_transform
 
 
 
 
-rosrun tf2_ros static_transform_publisher 0 -0.775 0 0 0 0 1 os_sensor_left os_sensor_right #To Left lidar frame
+rosrun tf2_ros static_transform_publisher 0 -1.005 0 0 0 0 1 os_sensor_left os_sensor_right #To Left lidar frame
 
 Autoware command:
 asl@asl-perception:~/Muni/Autoware_multilidar/Autoware/ros$ roslaunch multi_lidar_calibrator multi_lidar_calibrator.launch points_parent_src:=/ouster1/points points_child_src:=/ouster2/points x:=0.0 y:=-0.775 z:=0.0 roll:=0.0 pitch:=0.0 yaw:=0.0

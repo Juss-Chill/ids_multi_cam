@@ -43,7 +43,7 @@ public:
 
         // --- Synchronizer setup ---
         SyncPolicy policy(10);                                    // queue size
-        policy.setMaxIntervalDuration(ros::Duration(0.02));       // allow up to 20 ms skew
+        policy.setMaxIntervalDuration(ros::Duration(0.1));       // allow from 100ms skew
         sync_.reset(new message_filters::Synchronizer<SyncPolicy>(policy));
         sync_->connectInput(sub_right_, sub_left_);
         sync_->registerCallback(boost::bind(&DualLidarFusion::callback, this, _1, _2));
@@ -52,6 +52,7 @@ public:
     void callback(const sensor_msgs::PointCloud2ConstPtr& r,
                   const sensor_msgs::PointCloud2ConstPtr& l) 
     {
+        std::cout << "Sync success\n";
         pcl::PointCloud<pcl::PointXYZ>::Ptr cr(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::PointCloud<pcl::PointXYZ>::Ptr cl(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::PointCloud<pcl::PointXYZ>::Ptr clt(new pcl::PointCloud<pcl::PointXYZ>);

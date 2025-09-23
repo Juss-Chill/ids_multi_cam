@@ -124,7 +124,7 @@
       <param name="~/imu_port" type="int" value="$(arg imu_port)"/>
       <param name="~/udp_profile_lidar" type="str" value="$(arg udp_profile_lidar)"/>
       <param name="~/lidar_mode" type="str" value="$(arg lidar_mode)"/>
-      <param name="~/timestamp_mode" type="str" value="$(arg timestamp_mode)"/>
+      <param name="~/timestamp_mode" type="str" value="TIME_FROM_INTERNAL_OSC"/>
       <param name="~/ptp_utc_tai_offset" type="double"
         value="$(arg ptp_utc_tai_offset)"/>
       <param name="~/metadata" type="str" value="$(arg metadata)"/>
@@ -171,7 +171,7 @@
       <param name="~/imu_port" type="int" value="$(arg imu_port)"/>
       <param name="~/udp_profile_lidar" type="str" value="$(arg udp_profile_lidar)"/>
       <param name="~/lidar_mode" type="str" value="$(arg lidar_mode)"/>
-      <param name="~/timestamp_mode" type="str" value="$(arg timestamp_mode)"/>
+      <param name="~/timestamp_mode" type="str" value="TIME_FROM_INTERNAL_OSC"/>
       <param name="~/ptp_utc_tai_offset" type="double"
         value="$(arg ptp_utc_tai_offset)"/>
       <param name="~/metadata" type="str" value="$(arg metadata)"/>

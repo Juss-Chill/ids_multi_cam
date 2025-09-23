@@ -165,8 +165,13 @@ class OusterDriver : public OusterSensor {
                     tf_bcast.apply_lidar_to_sensor_transform(), organized,
                     destagger, min_range, max_range, v_reduction,
                     [this](PointCloudProcessor_OutputType msgs) {
-                        for (size_t i = 0; i < msgs.size(); ++i)
+                        // std::cout << "Using Driver nodelet\n";
+                        
+                        for (size_t i = 0; i < msgs.size(); ++i){
+                            msgs[i]->header.stamp = ros::Time::now();
                             lidar_pubs[i].publish(*msgs[i]);
+                        }
+                            
                     }));
 
             // warn about profile incompatibility

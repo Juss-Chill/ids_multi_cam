@@ -2,11 +2,34 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
+
+// PCL
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/common/transforms.h>
+
+// Eigen Lib
 #include <Eigen/Dense>
+
+// TF2 headers
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_eigen/tf2_eigen.h>
+
+/*
+Description:
+This node listens to the pointcloud from the left lidar, right lidars and listens dynamic transformation from the Autoware node (Transformation between the left and right lidar is computed using NDT transform)
+and tranforms the left pointcloud to the right lidar pointcloud frame
+
+Inputs:
+a. Left lidar pointcloud (source frame)
+b. Right lidar pointcloud (Target frame)
+c. Trasform that moves the Left lidar PC to right lidar PC frame.
+
+Output:
+Merged pointlcoud from the left and right lidar
+*/
 
 class DualLidarFusion {
     ros::NodeHandle nh_, pnh_;
@@ -22,28 +45,43 @@ class DualLidarFusion {
     Eigen::Affine3f transform_ = Eigen::Affine3f::Identity();
     std::string frame_id_;
 
+    // listen to the Autoware published transform and store it in buffer
+    tf2_ros::Buffer tf_buffer_;
+    tf2_ros::TransformListener tf_listener_;
+
+    std::string parent_frame_;  // e.g. right lidar
+    std::string child_frame_;   // e.g. left lidar
+    std::string output_frame_;  // output merged cloud frame
+
 public:
     DualLidarFusion()
         : nh_(), pnh_("~"),
           sub_right_(nh_, pnh_.param<std::string>("right_topic", "/ouster1/points"), 10),
-          sub_left_(nh_, pnh_.param<std::string>("left_topic", "/ouster2/points"), 10)
+          sub_left_(nh_, pnh_.param<std::string>("left_topic", "/ouster2/points"), 10),
+          tf_listener_(tf_buffer_)
     {
+        parent_frame_ = pnh_.param<std::string>("parent_frame", "os_sensor_right");
+        child_frame_  = pnh_.param<std::string>("child_frame", "os_sensor_left");
+        output_frame_ = pnh_.param<std::string>("output_frame", "os_sensor_right");
+
+        #if 0
         // --- Transformation params ---
-        std::vector<double> tr_vals{0, 1.005, 0, 0, 0, 0, 1}; // x, y, z, qx, qy, qz, qw
+        std::vector<double> tr_vals{0.00923139, 1.02588, 0.00465358, 0.0174707, 0.000347, -0.0116989, -0.9997789}; // x, y, z, qx, qy, qz, qw //  0, 1.005, 0, 0, 0, 0, 1
         pnh_.param<std::vector<double>>("transformation_params", tr_vals, tr_vals);
 
         Eigen::Quaternionf q(tr_vals[6], tr_vals[3], tr_vals[4], tr_vals[5]);
         q.normalize();
         transform_.translation() << tr_vals[0], tr_vals[1], tr_vals[2];
         transform_.rotate(q);
+        #endif
 
-        // --- Output setup ---
+        // Output
         frame_id_ = pnh_.param<std::string>("output_frame", "os_sensor_right");
         merged_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("merged_cloud", 10);
 
-        // --- Synchronizer setup ---
+        // Synchronizer
         SyncPolicy policy(10);                                    // queue size
-        policy.setMaxIntervalDuration(ros::Duration(0.1));       // allow from 100ms skew
+        policy.setMaxIntervalDuration(ros::Duration(0.1));        // allow from 100ms skew
         sync_.reset(new message_filters::Synchronizer<SyncPolicy>(policy));
         sync_->connectInput(sub_right_, sub_left_);
         sync_->registerCallback(boost::bind(&DualLidarFusion::callback, this, _1, _2));
@@ -60,8 +98,19 @@ public:
         pcl::fromROSMsg(*r, *cr);
         pcl::fromROSMsg(*l, *cl);
 
-        // Transform left lidar into right lidar frame
-        pcl::transformPointCloud(*cl, *clt, transform_);
+        // Look for the transformation in the buffer
+        geometry_msgs::TransformStamped tf_msg = 
+                tf_buffer_.lookupTransform(parent_frame_,   // target (right lidar)
+                                           child_frame_,    // source (left lidar)
+                                           r->header.stamp,
+                                           ros::Duration(0.1)); // fail check for 0.1s
+
+        Eigen::Affine3d T = tf2::transformToEigen(tf_msg.transform);
+        Eigen::Affine3f T_float = T.cast<float>();
+
+        // Transform left lidar PC into right lidar frame
+        // pcl::transformPointCloud(*cl, *clt, transform_);
+        pcl::transformPointCloud(*cl, *clt, T_float);
 
         // Merge
         *cr += *clt;

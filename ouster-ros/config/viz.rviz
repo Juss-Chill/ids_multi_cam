@@ -6,6 +6,8 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /TF1
+        - /TF1/Frames1
       Splitter Ratio: 0.46451613306999207
     Tree Height: 798
   - Class: rviz/Selection
@@ -25,7 +27,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: Ouster_right_pointcloud
 Preferences:
   PromptSaveOnExit: false
 Toolbars:
@@ -203,11 +205,11 @@ Visualization Manager:
       Frames:
         All Enabled: false
         os_imu:
-          Value: true
+          Value: false
         os_lidar_left:
-          Value: true
+          Value: false
         os_lidar_right:
-          Value: true
+          Value: false
         os_sensor_left:
           Value: true
         os_sensor_right:
@@ -220,11 +222,11 @@ Visualization Manager:
       Show Names: true
       Tree:
         os_sensor_left:
-          os_imu:
-            {}
           os_lidar_left:
             {}
         os_sensor_right:
+          os_imu:
+            {}
           os_lidar_right:
             {}
       Update Interval: 0
@@ -393,7 +395,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 8.708120346069336
+      Distance: 7.917705535888672
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -401,17 +403,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 1.182578206062317
-        Y: -0.41321831941604614
-        Z: -1.6986740827560425
+        X: 0.9120087623596191
+        Y: 0.4320509433746338
+        Z: -1.291325569152832
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.1347967386245728
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 3.159876823425293
+      Yaw: 3.1448845863342285
     Saved: ~
 Window Geometry:
   Displays:

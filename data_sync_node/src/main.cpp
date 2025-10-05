@@ -1,6 +1,26 @@
 #include <data_sync.h>
 #include <chrono>
 #include <custom_msgs/object_info.h>
+#include <tf2_msgs/TFMessage.h>
+#include <ros/ros.h>
+
+/*
+Task Intended: MATLAB Lidar-Camera registration
+
+The below script scynchrinizes the data from the two cameras(left and right) and lidar(merged pointcloud from the right and left lidar),
+synchronizes them and stores them in the ROSBAG
+
+Inputs:
+a. Left camera images(compressed format) - dependency on ROS ImageProc plugin
+b. Right camera images(compressed format)- dependency on ROS ImageProc plugin
+c. Lidar pointlcoud (If two lidars are used, make sure to transform the rest of the lidars to the single lidar frame)
+
+output:
+ROS bag with poitclouds(all provided[Individual PCs + merged PC]), camera images
+
+Note: If needed log the TF's seperately into the text file, although the modules are present here, not used for the curent application
+*/
+
 
 // Global variables to control write frequency
 std::chrono::steady_clock::time_point last_write_time;
@@ -8,10 +28,16 @@ const double write_frequency = 0.5;  // 2 Hz (0.5 seconds interval)
 static int frame_cnt = 0;
 
 void bag_write_cb(const sensor_msgs::CompressedImageConstPtr& rcam_img, const sensor_msgs::CompressedImageConstPtr& lcam_img, 
-                  const sensor_msgs::PointCloud2ConstPtr vlp_pts, const custom_msgs::object_infoConstPtr& radar_data ,
-                  const geometry_msgs::Vector3StampedConstPtr accelration, const geometry_msgs::Vector3StampedConstPtr pose_lla, 
-                  const geometry_msgs::QuaternionStampedConstPtr quat, const geometry_msgs::TwistStampedConstPtr twist,
+                  const sensor_msgs::PointCloud2ConstPtr left_lidar_pts, const sensor_msgs::PointCloud2ConstPtr right_lidar_pts,
+                  const sensor_msgs::PointCloud2ConstPtr merged_lidar_pts,
                   rosbag::Bag& data_bag) {
+
+            //             ROS_INFO_STREAM("Right cam: " << rcam_img->header.stamp.toSec()
+            // << ", Left cam: " << lcam_img->header.stamp.toSec()
+            // << ", Left lidar: " << left_lidar_pts->header.stamp.toSec()
+            // << ", Right lidar: " << right_lidar_pts->header.stamp.toSec()
+            // << ", Merged lidar: " << merged_lidar_pts->header.stamp.toSec());
+
     auto now = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsed_seconds = now - last_write_time;
 
@@ -27,17 +53,26 @@ void bag_write_cb(const sensor_msgs::CompressedImageConstPtr& rcam_img, const se
         // Write synchronized lidar and camera data to the ROS bag
         data_bag.write("/right_cam/image_rect_color/compressed", rcam_img->header.stamp, *rcam_img);
         data_bag.write("/left_cam/image_rect_color/compressed", lcam_img->header.stamp, *lcam_img);
-        data_bag.write("/velodyne_points", vlp_pts->header.stamp, *vlp_pts);
-        data_bag.write("/dominant_obj_info", radar_data->header.stamp, *radar_data);
-
-        //Imu data write
-        data_bag.write("/filter/free_acceleration", accelration->header.stamp, *accelration);
-        data_bag.write("/filter/positionlla", pose_lla->header.stamp, *pose_lla);
-        data_bag.write("/filter/quaternion", quat->header.stamp, *quat);
-        data_bag.write("/filter/twist", twist->header.stamp, *twist);
+        data_bag.write("/ouster2/points", left_lidar_pts->header.stamp, *left_lidar_pts);
+        data_bag.write("/ouster1/points", right_lidar_pts->header.stamp, *right_lidar_pts);
+        data_bag.write("/merged_cloud", merged_lidar_pts->header.stamp, *merged_lidar_pts);
 
         std::cout << "Frame count : " << frame_cnt << std::endl;
         #endif
+    }
+}
+
+// Store the transforms published by the Autoware module
+void tf_cb(const tf2_msgs::TFMessage::ConstPtr& msg, rosbag::Bag& data_bag) {
+    if (!msg->transforms.empty()) {
+        data_bag.write("/tf", msg->transforms[0].header.stamp, *msg);
+    }
+}
+
+// Store the static transform between the lidar-sensor frames provided by the OUSTER ROS module
+void tf_static_cb(const tf2_msgs::TFMessage::ConstPtr& msg, rosbag::Bag& data_bag) {
+    if (!msg->transforms.empty()) {
+        data_bag.write("/tf_static", msg->transforms[0].header.stamp, *msg);
     }
 }
 
@@ -61,29 +96,34 @@ int main(int argc, char **argv) {
     }
 
     rosbag::Bag data_bag;
-    data_bag.open("fused_l_cam_Aug9.bag", rosbag::bagmode::Write);
+    data_bag.open("fused_lidar_cam.bag", rosbag::bagmode::Write);
     data_bag.setCompression(rosbag::compression::LZ4);
     #endif
 
     message_filters::Subscriber<sensor_msgs::CompressedImage> right_cam_img_sub(nh, "/right_cam/image_rect_color/compressed", 10);
     message_filters::Subscriber<sensor_msgs::CompressedImage> left_cam_img_sub(nh, "/left_cam/image_rect_color/compressed", 10);
-    message_filters::Subscriber<sensor_msgs::PointCloud2> vlp_16_points_sub(nh, "/velodyne_points", 10);
-    message_filters::Subscriber<custom_msgs::object_info> radar_obj_info_sub(nh, "/dominant_obj_info", 10);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> left_lidar_sub(nh, "/ouster2/points", 10);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> right_lidar_sub(nh, "/ouster1/points", 10);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> merged_lidar_sub(nh, "/merged_cloud", 10);
 
-    // IMU info
-    message_filters::Subscriber<geometry_msgs::Vector3Stamped>  free_acc(nh, "/filter/free_acceleration", 10);
-    message_filters::Subscriber<geometry_msgs::Vector3Stamped>  p_lla(nh, "/filter/positionlla", 10);
-    message_filters::Subscriber<geometry_msgs::QuaternionStamped>  quaternion(nh, "/filter/quaternion", 10);
-    message_filters::Subscriber<geometry_msgs::TwistStamped>  twist(nh, "/filter/twist", 10);
+    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, 
+                                                            sensor_msgs::PointCloud2, sensor_msgs::PointCloud2, sensor_msgs::PointCloud2> MySyncPolicy;
 
-    //message_filters::Subscriber<geometry_msgs::Vector3Stamped>  free_vel(nh, "/filter/velocity", 10); // not required as it is included in the Twist
-    
-    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, sensor_msgs::PointCloud2, custom_msgs::object_info
-                                                            ,geometry_msgs::Vector3Stamped, geometry_msgs::Vector3Stamped,geometry_msgs::QuaternionStamped, geometry_msgs::TwistStamped/*, geometry_msgs::Vector3Stamped*/> MySyncPolicy;
 
-    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), right_cam_img_sub, left_cam_img_sub, vlp_16_points_sub, radar_obj_info_sub
-                                                        ,free_acc, p_lla, quaternion, twist/*,free_vel*/);
-    sync.registerCallback(boost::bind(&bag_write_cb, _1, _2, _3, _4, _5, _6, _7, _8, boost::ref(data_bag)));
+    boost::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
+    sync_.reset(new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(50), right_cam_img_sub, left_cam_img_sub, left_lidar_sub, right_lidar_sub, merged_lidar_sub));
+    sync_->registerCallback(boost::bind(&bag_write_cb, _1, _2, _3, _4, _5, boost::ref(data_bag)));
+
+
+    // message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), right_cam_img_sub, left_cam_img_sub, left_lidar_sub, right_lidar_sub, merged_lidar_sub);
+    // sync.registerCallback(boost::bind(&bag_write_cb, _1, _2, _3, _4, _5, boost::ref(data_bag)));
+
+    // ros::Subscriber tf_sub = nh.subscribe<tf2_msgs::TFMessage>(
+    //     "/tf", 50, boost::bind(&tf_cb, _1, boost::ref(data_bag)));
+
+    // ros::Subscriber tf_static_sub = nh.subscribe<tf2_msgs::TFMessage>(
+    //     "/tf_static", 10, boost::bind(&tf_static_cb, _1, boost::ref(data_bag)));
+
     
     // Initialize the last write time
     last_write_time = std::chrono::steady_clock::now();

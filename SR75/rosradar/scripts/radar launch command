@@ -1,0 +1,11 @@
+sudo -E bash -c "source /opt/ros/noetic/setup.bash && source /home/asl-agx2/Muni/Data_collection/devel/setup.bash && rosrun rosradar radar_parse.py"
+
+TODO:
+
+a. create a seperate msg file
+b. update datasync file (Update readme with instructions)
+c. Check the data
+d. Integrate the IMU
+e. Create a seperate IMU msg file
+f. UPdate the data sync file
+e. Test

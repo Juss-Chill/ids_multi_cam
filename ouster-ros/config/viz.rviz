@@ -6,7 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /TF1
+        - /Grid1
         - /TF1/Frames1
       Splitter Ratio: 0.46451613306999207
     Tree Height: 798
@@ -39,7 +39,7 @@ Visualization Manager:
       Cell Size: 1
       Class: rviz/Grid
       Color: 160; 160; 164
-      Enabled: false
+      Enabled: true
       Line Style:
         Line Width: 0.009999999776482582
         Value: Lines
@@ -52,7 +52,7 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: false
       Autocompute Value Bounds:
@@ -221,14 +221,14 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        os_sensor_left:
-          os_lidar_left:
-            {}
         os_sensor_right:
-          os_imu:
-            {}
           os_lidar_right:
             {}
+          os_sensor_left:
+            os_imu:
+              {}
+            os_lidar_left:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -367,6 +367,14 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /radar_markers
+      Name: MarkerArray
+      Namespaces:
+        radar_objects: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -395,7 +403,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 7.917705535888672
+      Distance: 10.716704368591309
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -403,17 +411,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.9120087623596191
-        Y: 0.4320509433746338
-        Z: -1.291325569152832
+        X: 0.8805410265922546
+        Y: 0.13573163747787476
+        Z: 0.9463650584220886
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 1.519796371459961
       Target Frame: <Fixed Frame>
-      Yaw: 3.1448845863342285
+      Yaw: 1.585389494895935
     Saved: ~
 Window Geometry:
   Displays:

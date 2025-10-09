@@ -6,8 +6,8 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /Grid1
         - /TF1/Frames1
+        - /radar_detections1/Status1
       Splitter Ratio: 0.46451613306999207
     Tree Height: 798
   - Class: rviz/Selection
@@ -222,11 +222,11 @@ Visualization Manager:
       Show Names: true
       Tree:
         os_sensor_right:
+          os_imu:
+            {}
           os_lidar_right:
             {}
           os_sensor_left:
-            os_imu:
-              {}
             os_lidar_left:
               {}
       Update Interval: 0
@@ -370,7 +370,7 @@ Visualization Manager:
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /radar_markers
-      Name: MarkerArray
+      Name: radar_detections
       Namespaces:
         radar_objects: true
       Queue Size: 100
@@ -403,7 +403,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 10.716704368591309
+      Distance: 12.767077445983887
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -411,17 +411,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.8805410265922546
-        Y: 0.13573163747787476
-        Z: 0.9463650584220886
+        X: 0.5877084732055664
+        Y: 1.292538046836853
+        Z: 0.9778077602386475
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.519796371459961
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 1.585389494895935
+      Yaw: 1.560389518737793
     Saved: ~
 Window Geometry:
   Displays:

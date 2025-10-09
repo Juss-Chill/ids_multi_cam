@@ -97,7 +97,15 @@ class ZCAN_TransmitFD_Data(Structure):
 class ZCAN_ReceiveFD_Data(Structure):
     _fields_ = [("frame", ZCAN_CANFD_FRAME), ("timestamp", c_ulonglong)]
 
-CanDLLName = "./src/ids_multi_cam/SR75/rosradar/libs/Jetson/libcontrolcanfd.so"
+
+base_path = os.path.dirname(os.path.abspath(__file__))
+# CanDLLName = os.path.join(base_path, "../libs/Jetson/libcontrolcanfd.so")
+CanDLLName = os.path.join(base_path, "../libs/Linux_X86_Python3/libcontrolcanfd.so")
+CanDLLName = os.path.normpath(CanDLLName)
+# os.getcwd() returns /home/asl/Muni/workspace/src/ids_multi_cam/SR75/rosradar/launch
+# Acual library is at /home/asl/Muni/workspace/src/ids_multi_cam/SR75/rosradar/libs/Jetson
+# CanDLLName = "./src/ids_multi_cam/SR75/rosradar/libs/Linux_X86_Python3/libcontrolcanfd.so"
+
 canDLL = cdll.LoadLibrary(CanDLLName)
 
 # Define function argument and return types

@@ -51,7 +51,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  object_info.msg
+  RadarDetection.msg
+  RadarDetectionArray.msg
   imu_data.msg
 )
 

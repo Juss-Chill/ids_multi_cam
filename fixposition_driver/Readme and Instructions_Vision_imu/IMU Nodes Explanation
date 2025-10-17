@@ -1,0 +1,164 @@
+📑️Imu Output :
+All Imu Output Is Generated At The Imu Frequency Of Approximately 200 Hz. Note That The Imu Output Requires A Lot Of Output Bandwidth. 
+For Example, On A Serial Port, The Baud Rate Must Be Set High Enough For The Necessary Bandwidth. The Exact Number Depends On What Messages Are Enabled For The Port.
+
+Available IMU Messages:
+
+🗒️FP_A-RAWIMU : This message contains time, acceleration and angular velocity (raw value, no bias correction, only coordinate transformation applied) in the sensor frame.
+Ex : https://docs.fixposition.com/fd/fp_a-rawimu
+header: 
+  seq: 14176
+  stamp: 
+    secs: 1753336323
+    nsecs: 994389000
+  frame_id: "FP_VRTK"
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0
+orientation_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+angular_velocity: 
+  x: -0.003995 Raw angular velocity in output frame, X component
+  y: -0.002397 Raw angular velocity in output frame, Y component
+  z: -0.003995 Raw angular velocity in output frame, Z component
+angular_velocity_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+linear_acceleration: 
+  x: 0.122104 Raw acceleration in output frame, X component
+  y: -0.14006 Raw acceleration in output frame, Y component
+  z: 9.916785 Raw acceleration in output frame, Z component
+linear_acceleration_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+---
+
+📜️FP_A-CORRIMU : This message contains time, acceleration and angular velocity (coordinate transformation and bias correction applied) in the sensor frame.
+
+📜️NOV_B-RAWIMU : This message contains time and the IMU’s acceleration and angular velocity (raw value, no bias correction, only coordinate transformation applied) in the sensor frame. This message conveys similar information to the FP_A-RAWIMU message, only in another format. >>>> gives lot of data, need to see whether useful or not.
+
+📜️FP_A-ODOMENU : This message contains full fusion ENU odometry output and additional status information. It is output at the configured rate.
+
+📜️FP_A-ODOMETRY : This message contains full fusion odometry output and additional status information. It is output at the configured rate. Many outputs are only available once Fusion is fully initialized. We can find full details here : https://docs.fixposition.com/fd/fp_a-odometry
+
+📜️FP_A-LLH : This message contains time, geographic coordinates and the position covariance of the output frame in East-North-up (ENU). The coordinates are transformed from ECEF using the WGS-84 parameters. It is output at the configured rate.
+
+Important details we get here are :
+
+Latitude : Latitude, range -90.000000000–90.000000000, > 0 for North, < 0 for South
+Longitude : Longitude, range -180.000000000–180.000000000, > 0 for East, < 0 for West
+Height : Ellipsoidal height, range -1000.0000 - 50000.0000
+
+📜️NMEA-GN-GGA
+Description:
+Standard NMEA: Global positioning system fix data. This message contains time, date, position (in LLH coordinates), fix quality, number of satellites, and horizontal dilution of precision (HDOP) data provided by the selected source.
+
+Configuration:
+NMEA-GN-GGA_GNSS for combined (average) output from both receivers
+
+	The time and position data is the average between GNSS1 and GNSS2.
+	The fix type, number of satellites and PDOP values are from the “best” receiver.
+	The message is only valid if both receivers have a valid fix.
+
+NMEA-GN-GGA_GNSS1 for output from GNSS 1 receiver
+
+	This is the standard NMEA GGA for GNSS1.
+
+NMEA-GN-GGA_GNSS2 for output from GNSS 2 receiver
+
+	This is the standard NMEA GGA for GNSS2.
+
+NMEA-GN-GGA_FUSION for output from Fusion
+
+	The time and position data is from the Fusion solution.
+	The fix type, number of satellites and PDOP values are from the “best” GNSS receiver.
+	The message is only valid if Fusion data is valid (Fusion initialized and propagation successful).
+
+The quality indicator is:
+
+	When fusion is using GNSS: The GNSS state (RTK fixed, RTK float, SPP) of the best GNSS receiver.
+	When fusion not using GNSS: Dead-reckoning or invalid depending on the state of fusion.
+	When fusion is not initialized: Invalid, no matter the state of the GNSS receivers.
+
+NMEA-GN-GGA_GNSS1TOS for top-of-second 1Hz strict NMEA output from GNSS 1 receiver
+
+	Like NMEA-GN-GGA_GNSS1, but only the top-of-second message
+	Always strict NMEA (the high-precision NMEA configuration has no effect)
+	The intended use is for time sync applications that use the PPS output of GNSS1 (for example, gpsd and chrony)
+	See also NMEA-GN-RMC_GNSS1TOS and NMEA-GN-ZDA_GNSS1TOS
+
+NMEA-GN-GGA_NTRIP for top-of-second 1Hz strict NMEA message for NTRIP
+
+	The time is system time (which is synced with GNSS time)
+
+	The position data is the last known position from GNSS1, with fallback to GNSS2, with fallback to Fusion
+
+	      Old position information is used for up to 30 seconds
+
+	The fix type, number of satellits, PDOP, and quality indicators are fixed
+
+	      No position available: quality=0, num_sv=0, pdop=99.99
+ 
+	     Position available: quality=1, num_sv=10, pdop=02.00
+
+	Always strict NMEA (the high-precision NMEA configuration has no effect)
+	In this version diff_age and diff_sta fields are always null
+	Do not use this position for any other purpose than sending it to a NTRIP caster to get a VRS
+
+NMEA-GP-GGA_GNSS, NMEA-GP-GGA_GNSS1, NMEA-GP-GGA_GNSS2, NMEA-GP-GGA_FUSION, NMEA-GP-GGA_GNSS1TOS and NMEA-GNP-GGA_NTRIP
+
+	Legacy messages. These messages also have GN constellation but the talker ID is “GP”
+
+Notes:
+	These messages does not contain any information that would let one tell them apart. Do not enable more than one of these in the same port.
+	This message is according to NMEA 0183 v4.11 (and erratas).
+
+
+📜️NOV_B-HEADING2
+Description:
+This message contains only the heading from GNSS measurements; no Fusion data is
+used here. The heading is defined as the angle from the true North of GNSS1 to the
+GNSS2 vector in a clockwise direction.
+
+For more details : https://docs.fixposition.com/fd/nov_b-heading2
+
+📜️FP_A-GNSSANT
+Description:
+This message contains information on the GNSS antenna supervision, such as the antennas’ state and power supply. Under normal conditions, the GNSS state should be OK, and the power should be ON.
+
+Values for gnss1_state and gnss2_state:
+
+null : State not available, for example during initialisation of the receiver
+ok : Antenna detected and good
+open : No antenna detected (e.g. no antenna connected, or connected via DC-blocking, such as a power-splitter)
+short: Antenna short circuit detected
+
+Values for gnss1_power and gnss2_power:
+
+null : Power status not available, for example during initialisation of the receiver
+on : Antenna power supply is on
+off : Antenna power supply is off
+
+FP_A-GNSSCORR
+Description:
+This message contains status information about the GNSS correction data such as statistics regarding the correction data tracked by the GNSS receivers (e.g., number of L1 and L2 signals), the fix type, the average correction data latency, update rate, data rate, and message rate, as well as the correction station position and baseline.
+
+https://docs.fixposition.com/fd/fp_a-gnsscorr
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

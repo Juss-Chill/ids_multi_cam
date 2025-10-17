@@ -1,0 +1,28 @@
+==============================================================================================
+Create two seperate empty text files named CATKIN_IGNORE in the *_ros_2 folders
+==============================================================================================
+
+
+asl-laptop2@asllaptop2:~/fp_public_ws$ source devel/setup.bash
+
+asl-laptop2@asllaptop2:~/fp_public_ws$ roslaunch fixposition_driver_ros1 tcp.launch    - For communication over wifi
+
+asl-laptop2@asllaptop2:~/fp_public_ws$ roslaunch fixposition_driver_ros1 serial.launch  - for serial comunication
+
+In new terminal Call for topics:
+
+asl-laptop2@asllaptop2:~/fp_public_ws$ rostopic echo /fixposition/gnss1
+
+asl-laptop2@asllaptop2:~/fp_public_ws$ rostopic echo /fixposition/gnss2
+
+asl-laptop2@asllaptop2:~/fp_public_ws$ rostopic echo /fixposition/rawimu
+
+asl-laptop2@asllaptop2:~/fp_public_ws$ rostopic echo /fixposition/imu_ypr
+
+
+We can find topic names in below link:
+https://docs.fixposition.com/fd/fixposition-ros-driver
+
+https://docs.fixposition.com/fd/installation-and-usage
+
+https://mtidocs.movella.com/xvn-software-ros

@@ -40,37 +40,37 @@ class RadarParse:
         self.dev_ch1 = radar_utils.init_channel(self.device_handle, 0)
         self.dev_ch2 = radar_utils.init_channel(self.device_handle, 1)
         radar_utils.start_channel(self.dev_ch2)
-
-        marker_array = MarkerArray()
         radar_detections_msg = RadarDetectionArray()
-        
+        radar_detections_msg.header.stamp = rospy.Time.now()
+        radar_detections_msg.header.frame_id = "os_sensor_right"
         try:
             while True:
                 raw_msgs = radar_utils.receive_can_data(self.dev_ch2)
-
-                radar_detections_msg.header.stamp = rospy.Time.now()
-                radar_detections_msg.header.frame_id = "os_sensor_right"
-                
-                print(type(raw_msgs), ",,,,,,",len(raw_msgs))
-                marker_array.markers.clear()
                 radar_detections_msg.detections.clear()
 
                 for i in range(len(raw_msgs)):
 
-                    radar_detection = RadarDetection()
-              
                     if(raw_msgs[i]['can_id'] == "0x600"):
+                        # Check the header for the number of detections
                         num_objs = int(raw_msgs[i]['data'][0], 16)
                         # body_speed = (( int(raw_msgs[i]['data'][3], 16) * 256 ) + int(raw_msgs[i]['data'][4], 16) )*0.1 - 20
                         print(f"Number of detected objects: {num_objs}")
                         # print(f"Speed: {body_speed}")
                     elif(raw_msgs[i]['can_id'] == "0x701"):
+                        # Decode the payload
+
+                        # Update the ROS Message with the detection data
+                        radar_detection = RadarDetection()
 
                         # differentiate between frames and subframes
                         obj_id = int(raw_msgs[i]['data'][0], 16) & 0x7F
                         frame_code = int(raw_msgs[i]['data'][0], 16) & 0x80
 
+                        radar_detection.uid = obj_id
+
                         if(frame_code == 0x00):
+                            # subframe-A
+
                             # distance in m
                             # speed in m/s
                             # lat dist : y coord
@@ -102,75 +102,19 @@ class RadarParse:
                             obj_y   = radar_in_lidar[1]
 
                             # Radar's x-axis is longitudinal, current code does not retrieve the height of the object
-                            radar_detection.position.x, radar_detection.position.y, radar_detection.position.z = long_dist, lat_dist, 0.
+                            radar_detection.position.x, radar_detection.position.y, radar_detection.position.z = obj_x, obj_y, 0.
                             # velocity remains constant as the lidar and radar are mounted static, hence not transformed
                             
-                            # write a seperate node for the radar visualzation
-                            # visualization
-                            marker = Marker()
-                            marker.header.frame_id = "os_sensor_right"
-                            marker.header.stamp = rospy.Time.now()
-                            marker.ns = "radar_objects"
-                            marker.id = obj_id
-                            marker.type = Marker.CUBE
-                            marker.action = Marker.ADD
-                            
-                            marker.pose.position.x = obj_x
-                            marker.pose.position.y = obj_y
-                            marker.pose.position.z = 0.
-                            marker.pose.orientation.w = 1
-                        
-                            marker.scale.x = 0.5
-                            marker.scale.y = 0.5
-                            marker.scale.z = 3
-
-                            marker.color.r = 0
-                            marker.color.g = 1
-                            marker.color.b = 0
-                            marker.color.a = 0.8
-
-                            marker.lifetime = rospy.Duration(0.01)  # keeps refreshing
-                        
-                            marker_array.markers.append(marker)
-
-                            text_marker = Marker()
-                            text_marker.header.frame_id = "os_sensor_right"
-                            text_marker.header.stamp = rospy.Time.now()
-                            text_marker.ns = "radar_objects"
-                            text_marker.id = obj_id + 100  # Ensuring unique ID for the text marker
-                            text_marker.type = Marker.TEXT_VIEW_FACING
-                            text_marker.action = Marker.ADD
-
-                            # Positioning the text above the object (slightly raised)
-                            text_marker.pose.position.x = obj_x 
-                            text_marker.pose.position.y = obj_y
-                            text_marker.pose.position.z = 3.5  # Adjust height if needed
-                            text_marker.pose.orientation.w = 1.0
-
-                            # Format text with speed and distance
-                            # text_marker.text = f"Dist: {Range:.3f} m\nSpeed: ({long_speed:.3f} , {lat_speed:.3f}) km/h"
-                            # text_marker.text = f"Dist: {Range:.3f} m\nSpeed: {Speed:.3f} km/h"
-                            text_marker.text = f"(X, Y): ({obj_x:.3f}, {obj_y:.3f}) m\nSpeed: {Speed:.3f} km/h"
-
-                            text_marker.scale.z = 0.3  # Adjust text size
-                            text_marker.color.r = 1.0
-                            text_marker.color.g = 1.0
-                            text_marker.color.b = 1.0
-                            text_marker.color.a = 1.0
-
-                            text_marker.lifetime = rospy.Duration(0.01)  # keeps refreshing
-
-                            marker_array.markers.append(text_marker)
-
-                            self.marker_pub.publish(marker_array)
+                            # store it in the array to publish
+                            radar_detections_msg.detections.append(radar_detection)
                         
                         elif(frame_code == 0x80):
+                            # subframe-B
+
+                            # Refer data sheet for more informaton on the data present in the subframe
                             # print("Sub-frame: ", obj_id)
                             # parse sub-frame data
                             pass
-                    
-                    # store it in the array to publish
-                    radar_detections_msg.detections.append(radar_detection)
 
                 self.radar_detections_pub.publish(radar_detections_msg)
 

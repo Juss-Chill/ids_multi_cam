@@ -1,5 +1,8 @@
 # Need to use with the RadarDetectionArray, since timestamp has to be present
 
+# unitque ID that will be assigned to different 
+uint16 uid
+
 # long dist : x coord
 # lat dist : y coord
 # Z is assumed to be 0

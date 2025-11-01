@@ -30,7 +30,7 @@ class RadarParse:
         self.radar_detections_pub = rospy.Publisher('/radar_detections', RadarDetectionArray, queue_size=1000)
         self.frame_id = rospy.get_param('~frame_id', 'os_sensor_right')
         self.rate = rospy.Rate(10)  # Hz
-        print("Note Init success")
+        print("Node Init success")
         radar_utils.utils_check()
        
         self.device_handle = radar_utils.open_device()
@@ -40,12 +40,18 @@ class RadarParse:
         self.dev_ch1 = radar_utils.init_channel(self.device_handle, 0)
         self.dev_ch2 = radar_utils.init_channel(self.device_handle, 1)
         radar_utils.start_channel(self.dev_ch2)
+    
+    def get_data(self):
+        """
+            Function that decodes the data and publshed into ROS message format
+            To visualzie these markers run the radar_msg_visualization node
+        """
         radar_detections_msg = RadarDetectionArray()
-        radar_detections_msg.header.stamp = rospy.Time.now()
         radar_detections_msg.header.frame_id = "os_sensor_right"
         try:
             while True:
                 raw_msgs = radar_utils.receive_can_data(self.dev_ch2)
+                radar_detections_msg.header.stamp = rospy.Time.now()
                 radar_detections_msg.detections.clear()
 
                 for i in range(len(raw_msgs)):
@@ -115,7 +121,7 @@ class RadarParse:
                             # print("Sub-frame: ", obj_id)
                             # parse sub-frame data
                             pass
-
+                
                 self.radar_detections_pub.publish(radar_detections_msg)
 
         except KeyboardInterrupt:
@@ -124,6 +130,7 @@ class RadarParse:
 if __name__ == '__main__':
     try:
         visualizer = RadarParse()
+        visualizer.get_data()
         
     except rospy.ROSInterruptException:
         pass

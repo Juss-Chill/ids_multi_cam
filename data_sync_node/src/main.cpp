@@ -3,6 +3,7 @@
 
 #include<custom_msgs/RadarDetection.h>
 #include<custom_msgs/RadarDetectionArray.h>
+#include<custom_msgs/imu_data.h>
 
 #include <tf2_msgs/TFMessage.h>
 #include <ros/ros.h>
@@ -34,6 +35,7 @@ void bag_write_cb(const sensor_msgs::CompressedImageConstPtr& rcam_img, const se
                   const sensor_msgs::PointCloud2ConstPtr left_lidar_pts, const sensor_msgs::PointCloud2ConstPtr right_lidar_pts,
                   const sensor_msgs::PointCloud2ConstPtr merged_lidar_pts,
                   const custom_msgs::RadarDetectionArrayConstPtr& radar_detections,
+                  const custom_msgs::imu_dataConstPtr& imu_gps,
                   rosbag::Bag& data_bag) {
 
             //             ROS_INFO_STREAM("Right cam: " << rcam_img->header.stamp.toSec()
@@ -61,6 +63,7 @@ void bag_write_cb(const sensor_msgs::CompressedImageConstPtr& rcam_img, const se
         data_bag.write("/ouster1/points", right_lidar_pts->header.stamp, *right_lidar_pts);
         data_bag.write("/merged_cloud", merged_lidar_pts->header.stamp, *merged_lidar_pts);
         data_bag.write("/radar_detections", radar_detections->header.stamp, *radar_detections);
+        data_bag.write("/imu_gps_synced_data", imu_gps->header.stamp, *imu_gps);
 
         std::cout << "Frame count : " << frame_cnt << std::endl;
         #endif
@@ -106,25 +109,31 @@ int main(int argc, char **argv) {
     #endif
 
     // camera images
-    message_filters::Subscriber<sensor_msgs::CompressedImage> right_cam_img_sub(nh, "/right_cam/image_rect_color/compressed", 10);
-    message_filters::Subscriber<sensor_msgs::CompressedImage> left_cam_img_sub(nh, "/left_cam/image_rect_color/compressed", 10);
+    message_filters::Subscriber<sensor_msgs::CompressedImage> right_cam_img_sub(nh, "/right_cam/image_rect_color/compressed", 50);
+    message_filters::Subscriber<sensor_msgs::CompressedImage> left_cam_img_sub(nh, "/left_cam/image_rect_color/compressed", 50);
     
     // LiDAR pointcloud
-    message_filters::Subscriber<sensor_msgs::PointCloud2> left_lidar_sub(nh, "/ouster2/points", 10);
-    message_filters::Subscriber<sensor_msgs::PointCloud2> right_lidar_sub(nh, "/ouster1/points", 10);
-    message_filters::Subscriber<sensor_msgs::PointCloud2> merged_lidar_sub(nh, "/merged_cloud", 10);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> left_lidar_sub(nh, "/ouster2/points", 50);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> right_lidar_sub(nh, "/ouster1/points", 50);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> merged_lidar_sub(nh, "/merged_cloud", 50);
 
     // Radar data
-    message_filters::Subscriber<custom_msgs::RadarDetectionArray> radar_detections_sub(nh, "/radar_detections", 10);
+    message_filters::Subscriber<custom_msgs::RadarDetectionArray> radar_detections_sub(nh, "/radar_detections", 50);
+
+    // IMU+GPS data
+    message_filters::Subscriber<custom_msgs::imu_data> imu_gps_sub(nh, "/imu_gps_synced_data", 50);
 
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::CompressedImage, sensor_msgs::CompressedImage, 
                                                             sensor_msgs::PointCloud2, sensor_msgs::PointCloud2, sensor_msgs::PointCloud2,
-                                                            custom_msgs::RadarDetectionArray> MySyncPolicy;
+                                                            custom_msgs::RadarDetectionArray
+                                                            ,custom_msgs::imu_data
+                                                            > MySyncPolicy;
 
 
     boost::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
-    sync_.reset(new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(50), right_cam_img_sub, left_cam_img_sub, left_lidar_sub, right_lidar_sub, merged_lidar_sub, radar_detections_sub));
-    sync_->registerCallback(boost::bind(&bag_write_cb, _1, _2, _3, _4, _5, _6, boost::ref(data_bag)));
+    sync_.reset(new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(100), right_cam_img_sub, left_cam_img_sub, left_lidar_sub, right_lidar_sub, 
+                                                                                  merged_lidar_sub, radar_detections_sub, imu_gps_sub)); // , imu_gps_sub
+    sync_->registerCallback(boost::bind(&bag_write_cb, _1, _2, _3, _4, _5, _6, _7, boost::ref(data_bag)));
 
 
     // message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), right_cam_img_sub, left_cam_img_sub, left_lidar_sub, right_lidar_sub, merged_lidar_sub);

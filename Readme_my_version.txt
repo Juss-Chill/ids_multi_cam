@@ -27,6 +27,15 @@ sudo -E bash -c "source /opt/ros/noetic/setup.bash && source /home/asl/Muni/work
 # To visualize the data published by the Radar node, run the Radar visualizer node
 rosrun rosradar radar_msg_visualization.py
 
+# Launch IMU and GPS
+#### For any new device, always follow this approach for installing the driver, donot copy-paste direcvtly - https://docs.fixposition.com/fd/installation-and-usage
+https://github.com/fixposition/fixposition_driver
+##### change the IP in the config.yaml file
+roslaunch fixposition_driver_ros1 node.launch
+
+# Sync IMU with GPS
+rosrun imu_gps_sync imu_gps_sync.py
+
 # Synchornize the data and store the data into the ROSBAG
 rosrun data_sync_node data_sync_node_node
 
@@ -41,4 +50,12 @@ rosrun data_sync_node data_sync_node_node
 4. Ensure the checkerboard is visible properly in the camera and lidar
 
 5. Alyways keep the checkbaord at 45 degrees so that corners are visible properly in the pointlcoud(45 deg longitudnially)
+
+
+## To identify the ports connected to the router switch
+sudo nmap -sn 192.168.0.1/24
+
+## IMU driver setup
+https://docs.fixposition.com/fd/installation-and-usage
+https://github.com/fixposition/fixposition_driver
 

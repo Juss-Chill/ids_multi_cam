@@ -22,10 +22,12 @@ roslaunch multi_lidar_calibrator multi_lidar_calibrator.launch points_parent_src
 rosrun lidar_merge lidar_ros
 
 # To launch the RADAR one has to give the permission to access the port and then load the ROS environment and start the data_sync_node
+# *** Load approriate libraries in the radar_utils for : Linux or Orin appropriately ***
 sudo -E bash -c "source /opt/ros/noetic/setup.bash && source /home/asl/Muni/workspace/devel/setup.bash && rosrun rosradar radar_parse.py"
 
 # To visualize the data published by the Radar node, run the Radar visualizer node
-rosrun rosradar radar_msg_visualization.py
+rosrun rosradar radar_msg_visualization.py _ros_marker_life_time:=0.5 # number of seconds this marker has to be there, here 0.5 seconds
+# rosrun rosradar radar_msg_visualization.py
 
 # Launch IMU and GPS
 #### For any new device, always follow this approach for installing the driver, donot copy-paste direcvtly - https://docs.fixposition.com/fd/installation-and-usage
@@ -37,7 +39,7 @@ roslaunch fixposition_driver_ros1 node.launch
 rosrun imu_gps_sync imu_gps_sync.py
 
 # Synchornize the data and store the data into the ROSBAG
-rosrun data_sync_node data_sync_node_node
+rosrun data_sync_node data_sync_node_node # add the code to change the frequency of the capture
 
 ## Important points to consider when doing lidar-camera calibration
 

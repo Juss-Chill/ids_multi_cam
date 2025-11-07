@@ -12,7 +12,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import os
 
-translation = [0.15, 0.50, 0.0] # in meters(make sure its not in inches)
+translation = [1.15, 0.25, 0.0] # in meters(make sure its not in inches)
 roll    = np.deg2rad(0)         # in degrees
 pitch   = np.deg2rad(0)
 yaw     = np.deg2rad(0)

@@ -25,6 +25,8 @@ class RadarMsgViz:
         rospy.init_node('Radar_Message_Vizualization_Node', anonymous=True)
         self.marker_pub = rospy.Publisher('/radar_markers', MarkerArray, queue_size=1000) # high queue to compensate B.W
         self.radar_detec_sub = rospy.Subscriber('/radar_detections', RadarDetectionArray, self.detections_cb)
+        self.ros_marker_life_time = rospy.get_param('~ros_marker_life_time', 0.5)
+        print("Marker time : ", self.ros_marker_life_time)
 
     def detections_cb(self, detections):
         marker_array = MarkerArray()
@@ -54,7 +56,7 @@ class RadarMsgViz:
             marker.color.b = 0
             marker.color.a = 0.8
 
-            marker.lifetime = rospy.Duration(0.01)  # keeps refreshing
+            marker.lifetime = rospy.Duration(self.ros_marker_life_time)  # keeps refreshing - 0.01 : old
             marker_array.markers.append(marker)
 
             # visualization of Text markers
@@ -83,7 +85,7 @@ class RadarMsgViz:
             text_marker.color.b = 1.0
             text_marker.color.a = 1.0
 
-            text_marker.lifetime = rospy.Duration(0.01)  # keeps refreshing
+            text_marker.lifetime = rospy.Duration(self.ros_marker_life_time)  # keeps refreshing
             marker_array.markers.append(text_marker)
 
             # print("Detected position : ", detection.position.x , " , ", detection.position.y)

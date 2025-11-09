@@ -28,7 +28,8 @@ Note: If needed log the TF's seperately into the text file, although the modules
 
 // Global variables to control write frequency
 std::chrono::steady_clock::time_point last_write_time;
-const double write_frequency = 0.5;  // 2 Hz (0.5 seconds interval)
+double WRITE_FREQUENCY = 0.5;  // 2 Hz (0.5 seconds interval)
+std::string BAG_NAME = "all_sensor_data.bag";
 static int frame_cnt = 0;
 
 void bag_write_cb(const sensor_msgs::CompressedImageConstPtr& rcam_img, const sensor_msgs::CompressedImageConstPtr& lcam_img, 
@@ -47,7 +48,7 @@ void bag_write_cb(const sensor_msgs::CompressedImageConstPtr& rcam_img, const se
     auto now = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsed_seconds = now - last_write_time;
 
-    if (elapsed_seconds.count() >= write_frequency) {
+    if (elapsed_seconds.count() >= WRITE_FREQUENCY) {
         // Reset the last write time
         last_write_time = now;
         frame_cnt++;
@@ -88,12 +89,15 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "data_sync_node");
 
     // ROS Handles 
-    ros::NodeHandle nh;
+    ros::NodeHandle nh("~");
+    nh.param<double>("write_frequency", WRITE_FREQUENCY, 0.5); // data will be recorded for every 0.5 seconds
+    nh.param<std::string>("bag_name", BAG_NAME, "all_sensor_data.bag");
 
     std::cout << "*********Initialised data sync node*********" << std::endl;
 
     #ifndef WRITE_CSV // Create a file and write the lidar and camera data to the file
     std::string f_name = "rcam_lidar_debug.csv";
+
     std::ofstream file(f_name);
 
     if (!file.good()) {
@@ -104,7 +108,7 @@ int main(int argc, char **argv) {
     }
 
     rosbag::Bag data_bag;
-    data_bag.open("fused_lidar_cam.bag", rosbag::bagmode::Write);
+    data_bag.open(BAG_NAME, rosbag::bagmode::Write);
     data_bag.setCompression(rosbag::compression::LZ4);
     #endif
 

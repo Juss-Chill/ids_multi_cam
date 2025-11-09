@@ -1,5 +1,5 @@
 This package can used to perform the lidar-lidar and lidar camera calibration
-
+source ./devel/setup.bash in every terminal
 Inputs:
 a. camera images (Right and left camera)
 b. Lidar data (Single lidar pointcloud, If more than one lidar is used, transform all the lidar pointcloud into one fixed frame[here we used two lidars left and right lidars, we merged the left lidar pointcloud and transformed into the right lidar frame and called it merged pointcloud)
@@ -29,6 +29,13 @@ sudo -E bash -c "source /opt/ros/noetic/setup.bash && source /home/asl/Muni/work
 rosrun rosradar radar_msg_visualization.py _ros_marker_life_time:=0.5 # number of seconds this marker has to be there, here 0.5 seconds
 # rosrun rosradar radar_msg_visualization.py
 
+Steps before launching IMU :
+1. Check the Ip address of your PC. For that Go to settings > Network > wired settings(gear icon) > Details > Ipv4 Address > copy that IP Address.
+2. Run  sudo nmap -sn "paste the ip address"/24
+3. Check for the ipp address of IMU.
+4. Copy and paste that imu address in the firefox browser and check if IMU UI is open or not.
+5. Now copy and paste that IMU IP address in config.yaml file in launch files of fixposition IMU.
+
 # Launch IMU and GPS
 #### For any new device, always follow this approach for installing the driver, donot copy-paste direcvtly - https://docs.fixposition.com/fd/installation-and-usage
 https://github.com/fixposition/fixposition_driver
@@ -39,7 +46,10 @@ roslaunch fixposition_driver_ros1 node.launch
 rosrun imu_gps_sync imu_gps_sync.py
 
 # Synchornize the data and store the data into the ROSBAG
-rosrun data_sync_node data_sync_node_node # add the code to change the frequency of the capture
+rosrun data_sync_node data_sync_node_node _write_frequency:=0.5 _bag_name:="test_3.bag"
+# Explanation: 
+_write_frequency:= data is recorded for every 0.5 seconds
+_bag_name:= "GIVE_YOUR_BAG_NAME".bag
 
 ## Important points to consider when doing lidar-camera calibration
 
